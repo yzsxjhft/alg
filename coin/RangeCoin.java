@@ -1,6 +1,6 @@
-public class CoinRange{
+public class RangeCoin {
     public static void main(String[] args) {
-        System.out.println(new CoinRange().range2(5));
+        System.out.println(new RangeCoin().range2(5));
     }
 
     public int range1(int n) {
