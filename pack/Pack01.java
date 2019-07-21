@@ -1,19 +1,21 @@
 public class Pack01 {
     public static void main(String[] args) {
-        int V = 68;
-        int[] c1 = {69, 60, 8};
-        int[] w1 = {10, 1, 3};
+        int V = 1000;
+        int[] c1 = {69, 60, 8, 4, 5, 5, 5, 8, 2};
+        int[] w1 = {10, 1, 3, 5, 4, 5, 2, 9, 20};
+        boolean[] visit = new boolean[c1.length];
+        System.out.println(new Pack01().charge1(c1, w1, V, visit));
+        System.out.println(new Pack01().charge2(c1, w1, V));
     }
 
-    public int charge1(int[] c1, int[] w1, int V, int value, boolean[] visit) {
-        if (V <= 0) return value;
-        int res = value;
+    public int charge1(int[] c1, int[] w1, int V, boolean[] visit) {
+        if (V <= 0) return 0;
+        int res = 0;
         for(int i = 0; i<c1.length; i++) {
             if (visit[i]) continue;
             if (c1[i] <= V) {
                 visit[i] = true;
-                res = Math.max(res, charge1(c1, w1, V-c1[i], value+w1[i], visit));
-                visit[i] = false;
+                res = Math.max(res, charge1(c1, w1, V-c1[i], visit) + w1[i]);
             }
         }
         return res;
