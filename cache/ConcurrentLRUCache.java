@@ -1,5 +1,3 @@
-package cache;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
@@ -7,19 +5,19 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public class LRUCache<K,V> {
+public class ConcurrentLRUCache<K,V> {
 
     private int capacity;
-    private LinkedList<Node> queue;
-    private HashMap<K, Node> dict;
+    private volatile LinkedList<Node> queue;
+    private volatile HashMap<K, Node> dict;
 
-    public LRUCache(int capacity) {
+    public ConcurrentLRUCache(int capacity) {
         this.capacity = capacity;
         this.queue = new LinkedList();
         this.dict = new HashMap<>(capacity);
     }
 
-    public V get(K key) {
+    public synchronized V get(K key) {
         Node node = dict.get(key);
         if (node == null) return null;
         queue.remove(node);
@@ -28,7 +26,7 @@ public class LRUCache<K,V> {
 
     }
 
-    public void  put(K key, V value) {
+    public synchronized void  put(K key, V value) {
         Node node = dict.get(key);
         if (node == null) {
             node = new Node(key, value);
@@ -56,16 +54,23 @@ public class LRUCache<K,V> {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        int capacity = 3;
-        LRUCache<Integer, Integer> lruCache = new LRUCache<>(capacity);
+        int capacity = 5;
+        ConcurrentLRUCache<Integer, Integer> lruCache = new ConcurrentLRUCache<>(capacity);
+
+        CountDownLatch latch = new CountDownLatch(100);
         Random keyRandom = new Random();
         Random valueRandom = new Random();
-
-        for (int i=0; i<10; i++) {
-            lruCache.put(keyRandom.nextInt(10), valueRandom.nextInt(1000));
-            lruCache.get(keyRandom.nextInt(10));
+        for (int i=0; i<100; i++) {
+            new Thread(){
+                @Override
+                public void run() {
+                    lruCache.put(keyRandom.nextInt(10), valueRandom.nextInt(1000));
+                    lruCache.get(keyRandom.nextInt(10));
+                    latch.countDown();
+                }
+            }.start();
         }
-
+        latch.await();
         System.out.println("test");
     }
 
